@@ -1,8 +1,13 @@
+/************************************************************/
+/*  Resta Um, jogo feito em C                               */
+/*  Augusto Ferreira Guilarducci                            */
+/*  20.1.4012 - Turma 41                                    */
+/************************************************************/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include <stdbool.h>
 
 #define TAM_MAX 200
 #define TAB_MAX 26
@@ -10,65 +15,39 @@
 
 #define ANSI_RESET "\x1b[0m" // desativa os efeitos anteriores
 #define ANSI_BOLD "\x1b[1m"  // coloca o texto em negrito
-#define ANSI_COLOR_BLACK "\x1b[30m"
 #define ANSI_COLOR_RED "\x1b[31m"
 #define ANSI_COLOR_GREEN "\x1b[32m"
-#define ANSI_COLOR_YELLOW "\x1b[33m"
 #define ANSI_COLOR_BLUE "\x1b[34m"
-#define ANSI_COLOR_MAGENTA "\x1b[35m"
 #define ANSI_COLOR_CYAN "\x1b[36m"
 #define ANSI_COLOR_WHITE "\x1b[37m"
-#define ANSI_BG_COLOR_BLACK "\x1b[40m"
-#define ANSI_BG_COLOR_RED "\x1b[41m"
-#define ANSI_BG_COLOR_GREEN "\x1b[42m"
-#define ANSI_BG_COLOR_YELLOW "\x1b[43m"
-#define ANSI_BG_COLOR_BLUE "\x1b[44m"
-#define ANSI_BG_COLOR_MAGENTA "\x1b[45m"
-#define ANSI_BG_COLOR_CYAN "\x1b[46m"
-#define ANSI_BG_COLOR_WHITE "\x1b[47m"
 
-// macros para facilitar o uso
+// Macros para facilitar o uso
 #define BOLD(string) ANSI_BOLD string ANSI_RESET
-#define BLACK(string) ANSI_COLOR_BLACK string ANSI_RESET
 #define BLUE(string) ANSI_COLOR_BLUE string ANSI_RESET
 #define RED(string) ANSI_COLOR_RED string ANSI_RESET
 #define GREEN(string) ANSI_COLOR_GREEN string ANSI_RESET
-#define YELLOW(string) ANSI_COLOR_YELLOW string ANSI_RESET
-#define BLUE(string) ANSI_COLOR_BLUE string ANSI_RESET
-#define MAGENTA(string) ANSI_COLOR_MAGENTA string ANSI_RESET
 #define CYAN(string) ANSI_COLOR_CYAN string ANSI_RESET
 #define WHITE(string) ANSI_COLOR_WHITE string ANSI_RESET
-#define BG_BLACK(string) ANSI_BG_COLOR_BLACK string ANSI_RESET
-#define BG_BLUE(string) ANSI_BG_COLOR_BLUE string ANSI_RESET
-#define BG_RED(string) ANSI_BG_COLOR_RED string ANSI_RESET
-#define BG_GREEN(string) ANSI_BG_COLOR_GREEN string ANSI_RESET
-#define BG_YELLOW(string) ANSI_BG_COLOR_YELLOW string ANSI_RESET
-#define BG_BLUE(string) ANSI_BG_COLOR_BLUE string ANSI_RESET
-#define BG_MAGENTA(string) ANSI_BG_COLOR_MAGENTA string ANSI_RESET
-#define BG_CYAN(string) ANSI_BG_COLOR_CYAN string ANSI_RESET
-#define BG_WHITE(string) ANSI_BG_COLOR_WHITE string ANSI_RESET
 
-// caracteres uteis para tabelas
+// Caracteres uteis para tabelas
 #define TAB_HOR "\u2501" // ━ (horizontal)
 #define TAB_VER "\u2503" // ┃ (vertical)
 #define TAB_TL "\u250F"  // ┏ (top-left)
-#define TAB_ML "\u2523"  // ┣ (middle-left)
-#define TAB_BL "\u2517"  // ┗ (bottom-left)
-#define TAB_TJ "\u2533"  // ┳ (top-join)
-#define TAB_MJ "\u254B"  // ╋ (middle-join)
-#define TAB_BJ "\u253B"  // ┻ (bottom-join)
-#define TAB_TR "\u2513"  // ┓ (top-right)
-#define TAB_MR "\u252B"  // ┫ (middle-right)
-#define TAB_BR "\u251B"  // ┛ (bottom-right)
+#define TAB_BL "\u2517" // ┗ (bottom-left)
+#define TAB_TR "\u2513" // ┓ (top-right)
+#define TAB_BR "\u251B" // ┛ (bottom-right)
 
-// TIPO COORDENADA
+/*---------------------------------------------------------*/
 
+/********** Structs ****************************************/
+/*== tipo coordenada para salvar a posição na matriz x,y ==*/
 typedef struct
 {
   int x;
   int y;
 } COORDENADA;
 
+/*== tipo movimento para mostrar os pinos usados num pulo =*/
 typedef struct
 {
   COORDENADA pino_inicial;
@@ -76,256 +55,281 @@ typedef struct
   COORDENADA pino_destino;
 } MOVIMENTO;
 
-// TIPO TABULEIRO
+/*== tipo do jogo para salvar tudo que o jogo registra ====*/
 typedef struct
 {
-  int num_pinos, num_buracos, foi_inicializado, tamanho_linhas, tamanho_colunas, eh_oh_fim, soma_movimentos, num_movimentos_possiveis;
+  int num_pinos, foi_inicializado, tamanho_linhas, tamanho_colunas, eh_oh_fim, tamanho_lista_movimentos, num_movimentos_possiveis;
   int **tabuleiro_jogo;
   COORDENADA pino_selecionado;
   MOVIMENTO *lista_de_movimentos, *lista_de_movimentos_ia;
 } RESTA_UM;
 
-// FUNCOES
+/*---------------------------------------------------------*/
 
-// inicio do jogo e manutencao
+/******** Funções ******************************************/
+/*==== Inicio do jogo e Manutenção ========================*/
 void inicializar_var_jogo(RESTA_UM *jogo);
 void alocar_matriz(int ***matriz, int tam_linha, int tam_coluna);
-void ler_valores_tabela(RESTA_UM *jogo, FILE *ponteiro_arquivo);
-int ler_tabuleiro_arquivo(RESTA_UM *jogo, char *nome_arquivo);
-void ler_tabuleiro_aleatorio(RESTA_UM *jogo);
 void liberar_memoria_jogo(RESTA_UM *jogo);
 
-// manipulacao tabuleiro
+/*==== Manipulação Tabuleiro ==============================*/
+void ler_valores_tabela(RESTA_UM *jogo, FILE *ponteiro_arquivo);
+void cria_tabuleiro_aleatorio(RESTA_UM *jogo);
+int ler_tabuleiro_arquivo(RESTA_UM *jogo, char *nome_arquivo);
 int salvar_tabuleiro(RESTA_UM *jogo, char *nome_arquivo);
 
-// verificacao derrota
+/*==== Verificação de Derrota/Vitoria =====================*/
 int tabuleiro_valido(RESTA_UM *jogo);
-
-// inteligencia artificial
-int gerencia_ia(RESTA_UM *jogo, int num_movimentos_ia);
+/*---- Inteligência Artificial ----------------------------*/
 int decidir_movimento_ia(RESTA_UM *jogo, int limite_index_ia, int index_ia, int salvar_movimento);
 
-// movimento
-int movimento_valido(RESTA_UM *jogo, MOVIMENTO movimento_teste);
-void faz_movimento(RESTA_UM *jogo, MOVIMENTO movimento);
-void desfaz_movimento(RESTA_UM *jogo, MOVIMENTO movimento);
+/*==== Movimento ==========================================*/
 MOVIMENTO cria_movimento(int posicao_x, int posicao_y, int direcao_x, int direcao_y);
 void reinicia_lista_movimentos(RESTA_UM *jogo);
-int verificar_movimentos_possiveis(RESTA_UM *jogo);
+void faz_movimento(RESTA_UM *jogo, MOVIMENTO movimento);
+void desfaz_movimento(RESTA_UM *jogo, MOVIMENTO movimento);
+int movimento_valido(RESTA_UM *jogo, MOVIMENTO movimento_teste);
+int cria_lista_movimentos(RESTA_UM *jogo);
 int gerenciar_movimento(RESTA_UM *jogo, char *comando_digitado);
 
-// imprimir
+/*==== Imprimir na Tela ===================================*/
 void imprimir_lista_movimentos(RESTA_UM *jogo);
 void imprimir_tabuleiro_jogo(RESTA_UM *jogo);
 void imprimir_msg_de_fim(char *tipo_de_fim);
+void imprimir_movimentos_ajuda(RESTA_UM *jogo);
 
-void criar_lista_movimentos_possiveis();
+/*---------------------------------------------------------*/
 
-// MAIN
+/***** Main e a Definição de Funções ***********************/
 int main(int argc, char *argv[])
 {
-  // declaracao de variaveis
+  /*==== Criação do Tabuleiro e Validação do jogo =========*/
+  /*---- Declaração de Variaveis --------------------------*/
   RESTA_UM jogo;
-  int i;
   char nome_arquivo[TAM_MAX], comando_digitado[TAM_MAX];
 
-  // inicia as variaveis do tabuleiro
-  inicializar_var_jogo(&jogo);
+  inicializar_var_jogo(&jogo); // Inicializa as variaveis do tabuleiro Resta Um
 
-  // ve se foi digitado um argumento na inicializacao
+  /*---- Verifica se foi digitado um Argumento ------------*/
   if (argc >= 2)
   {
     strcpy(nome_arquivo, argv[1]);
     if (!ler_tabuleiro_arquivo(&jogo, nome_arquivo))
     {
-      printf(RED("\nErro: Esse arquivo não existe...\n"));
+      printf(RED("\nErro: Esse arquivo não existe...\n")); // Não existe esse arquivo
     }
   }
   else
   {
-    // cria um tabuleiro aleatorio
-    ler_tabuleiro_aleatorio(&jogo);
+    /*---- Cria um tabuleiro de maneira aleatoria ---------*/
+    srand(time(0));
+    jogo.tamanho_linhas = rand() % 26 + 1;
+    jogo.tamanho_colunas = rand() % 26 + 1;
+
+    alocar_matriz(&jogo.tabuleiro_jogo, jogo.tamanho_linhas, jogo.tamanho_colunas);
+
+    ler_valores_tabela(&jogo, NULL); // Envia um nome de aquivo nulo
   }
 
-  // confirma que o jogo foi inicializado corretamente
-  if (jogo.foi_inicializado)
+  /*-- Confirma que o jogo foi inicializado corretamente --*/
+  if (!jogo.foi_inicializado)
   {
-    // verifica se o jogo eh sequer valido
-    if (!tabuleiro_valido(&jogo))
+    return 1;
+  }
+
+  if (!tabuleiro_valido(&jogo)) // Verifica se o tabuleiro é valido
+  {
+    // Derrota instantânea caso o tabuleiro nao seja valido
+    imprimir_tabuleiro_jogo(&jogo);
+    imprimir_msg_de_fim("derrota");
+    jogo.eh_oh_fim = 1;
+  }
+
+  else if (!cria_lista_movimentos(&jogo)) // Verifica se há movimentos possíveis
+  {
+    // Derrota instantânea caso não haja movimentos
+    imprimir_tabuleiro_jogo(&jogo);
+    jogo.eh_oh_fim = 1;
+    imprimir_msg_de_fim("derrota");
+  }
+
+  /*-- Cria lista de movimentos da inteligência artifical -*/
+  jogo.lista_de_movimentos_ia = malloc(jogo.num_pinos * sizeof(MOVIMENTO));
+
+  /*==== Jogo =============================================*/
+  /*---- Inicio do loop de jogo ---------------------------*/
+  while (!jogo.eh_oh_fim) // sai caso seja o fim do jogo - variável do tipo RESTA_UM
+  {
+    /*-- A Cada Novo Turno --------------------------------*/
+    imprimir_tabuleiro_jogo(&jogo);
+
+    if (jogo.num_pinos == 1) // Verifica se o jogador ganhou
     {
-      // caso o jogo nao seja valido, derrota instantanea
-      imprimir_tabuleiro_jogo(&jogo);
+      imprimir_msg_de_fim("vitoria");
       jogo.eh_oh_fim = 1;
-      imprimir_msg_de_fim("derrota");
     }
 
-    // verifica se há movimentos possiveis, e os registra num vetor
-    // se nao houver, derrota instanea
-    else if (!verificar_movimentos_possiveis(&jogo))
+    /*---- Ve se o jogador ainda pode ganhar com 5  -----*/
+    /*---- movimentos no futuro, usando backtracking ----*/
+    else if (decidir_movimento_ia(&jogo, 5, 0, 0))
     {
-      imprimir_tabuleiro_jogo(&jogo);
-      jogo.eh_oh_fim = 1;
-      imprimir_msg_de_fim("derrota");
-    }
 
-    jogo.lista_de_movimentos_ia = malloc(jogo.num_pinos * sizeof(MOVIMENTO));
+      /*---- Pede um comando pro jogador e formata ------*/
+      printf("\nDigite seu comando: ");
+      fgets(comando_digitado, TAM_MAX - 1, stdin);
+      comando_digitado[strlen(comando_digitado) - 1] = '\0'; // Retira o ENTER (\n)
 
-    // ve se eh o fim do jogo, nao define vitoria, apenas a saida
-    while (!jogo.eh_oh_fim)
-    {
-      // imprime o tabuleiro a cada novo turno
-      imprimir_tabuleiro_jogo(&jogo);
-
-      // ve se o usuario ganhou, ou seja, so resta um pino
-      if (jogo.num_pinos == 1)
+      /*---- Jogador digitou sair -----------------------*/
+      if (strcmp(comando_digitado, "sair") == 0)
       {
-        imprimir_msg_de_fim("vitoria");
+        printf(RED("Jogo fechado, sem salvar...\n"));
         jogo.eh_oh_fim = 1;
       }
-      else
+
+      /*---- Jogador digitou salvar ---------------------*/
+      else if (strncmp(comando_digitado, "salvar", 6) == 0)
       {
-
-        // ve se o jogador ja perdeu, independente do que faça
-        if (decidir_movimento_ia(&jogo, 5, 0, 0))
+        // Verifica se o jogador digitou um NOME para o arquivo
+        if (comando_digitado[6] == '\0' || (comando_digitado[6] == ' ' && comando_digitado[7] == '\0'))
         {
-
-          // pede e formata o comando dado pelo usuario
-          printf("\nDigite seu comando: ");
-          fgets(comando_digitado, TAM_MAX - 1, stdin);
-          comando_digitado[strlen(comando_digitado) - 1] = '\0';
-
-          // usuario digitou sair
-          if (strcmp(comando_digitado, "sair") == 0)
-          {
-            printf(RED("Jogo fechado, sem salvar...\n"));
-            jogo.eh_oh_fim = 1;
-          }
-
-          // usuario digitou salvar
-          else if (strncmp(comando_digitado, "salvar", 6) == 0)
-          {
-
-            // verifica se o usuario digitou algum nome para o arquivo
-            if (comando_digitado[6] == '\0' || (comando_digitado[6] == ' ' && comando_digitado[7] == '\0'))
-            {
-              printf(RED("Erro: Nao foi colocado o nome do arquivo!!\n"));
-            }
-
-            // verifica se o usuario digitou a extensao do arquivo
-
-            else if (strcmp(&comando_digitado[strlen(comando_digitado) - 4], ".txt") != 0)
-            {
-              printf(RED("Erro: Nao foi colocado a extensao do arquivo!!\n"));
-            }
-
-            // salva o tabuleiro no arquivo .txt
-            else if (salvar_tabuleiro(&jogo, &comando_digitado[6]))
-            {
-              printf(GREEN("Salvo!!\n"));
-            }
-          }
-
-          // usuario digitou ajuda
-          else if (strncmp(comando_digitado, "ajuda", 5) == 0)
-          {
-            // envia o numero de ajuda para o IA - Backtracking
-            if (decidir_movimento_ia(&jogo, atoi(&comando_digitado[6]), 0, 1))
-            {
-              i = 0;
-              MOVIMENTO fim_lista = cria_movimento(0, 0, 0, 0);
-              char direcao;
-              while (memcmp(&jogo.lista_de_movimentos_ia[i], &fim_lista, sizeof(MOVIMENTO)))
-              {
-                faz_movimento(&jogo, jogo.lista_de_movimentos_ia[i]);
-                imprimir_tabuleiro_jogo(&jogo);
-                printf(BLUE("\nO Movimento "));
-
-                if (jogo.lista_de_movimentos_ia[i].pino_inicial.x > jogo.lista_de_movimentos_ia[i].pino_meio.x)
-                {
-                  direcao = 'c';
-                }
-                else if (jogo.lista_de_movimentos_ia[i].pino_inicial.x < jogo.lista_de_movimentos_ia[i].pino_meio.x)
-                {
-                  direcao = 'b';
-                }
-                else if (jogo.lista_de_movimentos_ia[i].pino_inicial.y > jogo.lista_de_movimentos_ia[i].pino_meio.y)
-                {
-                  direcao = 'e';
-                }
-                else
-                {
-                  direcao = 'd';
-                }
-
-                printf(BLUE("%c %c"), direcao, jogo.lista_de_movimentos_ia[i].pino_inicial.x + NUM_PRA_LETRA);
-                printf(BLUE("%c foi executado com sucesso...\n\n"), jogo.lista_de_movimentos_ia[i].pino_inicial.y + NUM_PRA_LETRA);
-
-                i++;
-              }
-
-              printf(GREEN("Ajuda finalizada!\n"));
-            }
-            else
-            {
-              imprimir_tabuleiro_jogo(&jogo);
-              imprimir_msg_de_fim("derrota");
-              jogo.eh_oh_fim = 1;
-            }
-          }
-
-          // lida com outros possiveis comandos
-          else
-          {
-            // verifica se o usuario digitou algum movimento
-            switch (comando_digitado[0])
-            {
-            case 'c':
-            case 'b':
-            case 'e':
-            case 'd':
-            {
-              // ve se o comando digitado veio no formato: d CD
-              if (comando_digitado[1] == ' ' && comando_digitado[4] == '\0' && (comando_digitado[2] >= 'A' && comando_digitado[2] <= (jogo.tamanho_linhas + NUM_PRA_LETRA - 1)) && (comando_digitado[3] >= 'A' && comando_digitado[3] <= (jogo.tamanho_colunas + NUM_PRA_LETRA - 1)))
-              {
-                if (gerenciar_movimento(&jogo, comando_digitado))
-                { // movimento feito
-                  printf(GREEN("Movimento %c %c%c realizado com sucesso...\n"), comando_digitado[0], comando_digitado[2], comando_digitado[3]);
-                }
-                else
-                { // movimento invalido
-                  printf(RED("Erro: Movimento invalido!!\n"));
-                }
-              }
-              else
-              { // posicao inexistente no tabuleiro
-                printf(RED("Erro: Posicao inexistente!!\n"));
-              }
-              break;
-            }
-            default:
-            { // nao eh um comando
-              printf(RED("Erro: Comando nao reconhecido!!\n"));
-            }
-            }
-          }
+          printf(RED("Erro: Nao foi colocado o nome do arquivo!!\n"));
         }
+
+        // Verifica se o jogador digitou a EXTENSÂO do arquivo
+        else if (strcmp(&comando_digitado[strlen(comando_digitado) - 4], ".txt") != 0)
+        {
+          printf(RED("Erro: Nao foi colocado a extensao do arquivo!!\n"));
+        }
+
+        // Salva o tabuleiro no arquivo .txt
+        else if (salvar_tabuleiro(&jogo, &comando_digitado[7])) /* <--- Envio o ponteiro da onde começa o nome do arquivo */
+        {
+          printf(GREEN("Tabuleiro salvo no arquivo "));
+          printf(BLUE("%s"), &comando_digitado[7]);
+          printf(GREEN(" com sucesso!!"));
+        }
+      }
+
+      /*---- Jogador digitou ajuda ----------------------*/
+      else if (strncmp(comando_digitado, "ajuda", 5) == 0)
+      {
+        // Verifica se o jogador digitou uma N para a ajuda
+        if (comando_digitado[6] == '\0' || (comando_digitado[6] == ' ' && comando_digitado[7] == '\0'))
+        {
+        }
+
+        /* Realiza a ajuda usando a mesma função que verifica a derrota, */
+        /* a diferença é que nesse caso ela registra os movimentos.      */
+        // Utilizando o backtracking, faz n movimentos.
+        else if (decidir_movimento_ia(&jogo, atoi(&comando_digitado[6]), 0, 1))
+        {
+          imprimir_movimentos_ajuda(&jogo);
+          printf(GREEN(BOLD("Ajuda finalizada!\n")));
+        }
+
+        // Caso a ajuda tenha levado a derrota
         else
         {
-          // derrota no caso de nao houver como ganhar mais
+          imprimir_movimentos_ajuda(&jogo);
+          imprimir_tabuleiro_jogo(&jogo);
           imprimir_msg_de_fim("derrota");
           jogo.eh_oh_fim = 1;
         }
       }
-    }
 
-    // libera as matrizes usadas no jogo
-    liberar_memoria_jogo(&jogo);
+      /*---- Jogador digitou movimento ou um comando desconhecido ---*/
+      else
+      {
+        // Verifica se o jogador digitou algum movimento
+        switch (comando_digitado[0])
+        {
+        case 'c':
+        case 'b':
+        case 'e':
+        case 'd':
+        {
+          // Verifica se o comando foi digitado no formato: m CD
+          if (comando_digitado[1] == ' ' && comando_digitado[4] == '\0'                                             /**/
+              && (comando_digitado[2] >= 'A' && comando_digitado[2] <= (jogo.tamanho_linhas + NUM_PRA_LETRA - 1))   /**/
+              && (comando_digitado[3] >= 'A' && comando_digitado[3] <= (jogo.tamanho_colunas + NUM_PRA_LETRA - 1))) /**/
+          {
+            // Envia o movimento para ser alisado e realizado
+            if (gerenciar_movimento(&jogo, comando_digitado))
+            {
+              printf(GREEN("Movimento %c %c%c realizado com sucesso...\n"), comando_digitado[0], comando_digitado[2], comando_digitado[3]);
+            }
+            // Movimento inválido
+            else
+            {
+              printf(RED("Erro: Movimento invalido!!\n"));
+            }
+          }
+          else
+          { // Posição inexistente do tabuleiro
+            printf(RED("Erro: Posicao inexistente!!\n"));
+          }
+          break;
+        }
+
+        // Jogador digitou um comando desconhecido
+        default:
+        { //
+          printf(RED("Erro: Comando nao reconhecido!!\n"));
+        }
+        }
+      }
+    }
+    else
+    {
+      // Derrota no caso a não houver como ganhar mais
+      imprimir_msg_de_fim("derrota");
+      jogo.eh_oh_fim = 1;
+    }
   }
 
+  /*==== Finaliza programa e libera a memoria =============*/
+  liberar_memoria_jogo(&jogo);
   printf("\n");
   return 0;
 }
 
+void imprimir_movimentos_ajuda(RESTA_UM *jogo)
+{
+  int i;
+  i = 0;
+  MOVIMENTO fim_lista = cria_movimento(0, 0, 0, 0);
+  char direcao;
+  while (memcmp(&jogo->lista_de_movimentos_ia[i], &fim_lista, sizeof(MOVIMENTO)))
+  {
+    faz_movimento(jogo, jogo->lista_de_movimentos_ia[i]);
+    imprimir_tabuleiro_jogo(jogo);
+    printf(BLUE("O Movimento "));
+
+    if (jogo->lista_de_movimentos_ia[i].pino_inicial.x > jogo->lista_de_movimentos_ia[i].pino_meio.x)
+    {
+      direcao = 'c';
+    }
+    else if (jogo->lista_de_movimentos_ia[i].pino_inicial.x < jogo->lista_de_movimentos_ia[i].pino_meio.x)
+    {
+      direcao = 'b';
+    }
+    else if (jogo->lista_de_movimentos_ia[i].pino_inicial.y > jogo->lista_de_movimentos_ia[i].pino_meio.y)
+    {
+      direcao = 'e';
+    }
+    else
+    {
+      direcao = 'd';
+    }
+
+    printf(CYAN("%c %c"), direcao, jogo->lista_de_movimentos_ia[i].pino_inicial.x + NUM_PRA_LETRA);
+    printf(CYAN("%c"), jogo->lista_de_movimentos_ia[i].pino_inicial.y + NUM_PRA_LETRA);
+    printf(BLUE(" foi executado com sucesso..."));
+
+    printf("\n");
+    i++;
+  }
+}
 void imprimir_lista_movimentos(RESTA_UM *jogo)
 {
   int i;
@@ -339,10 +343,9 @@ void imprimir_lista_movimentos(RESTA_UM *jogo)
 void inicializar_var_jogo(RESTA_UM *jogo)
 {
   jogo->num_pinos = 0;
-  jogo->num_buracos = 0;
   jogo->foi_inicializado = 0;
   jogo->eh_oh_fim = 0;
-  jogo->soma_movimentos = 0;
+  jogo->tamanho_lista_movimentos = 0;
 }
 
 void alocar_matriz(int ***matriz, int tam_linha, int tam_coluna)
@@ -373,7 +376,6 @@ void ler_valores_tabela(RESTA_UM *jogo, FILE *ponteiro_arquivo)
         jogo->tabuleiro_jogo[i][j] = (rand() % 3) - 1;
       }
       jogo->num_pinos += (jogo->tabuleiro_jogo[i][j] == 1);
-      jogo->num_buracos += (jogo->tabuleiro_jogo[i][j] == 1 || jogo->tabuleiro_jogo[i][j] == 0);
     }
   }
   jogo->foi_inicializado = 1;
@@ -398,18 +400,6 @@ int ler_tabuleiro_arquivo(RESTA_UM *jogo, char *nome_arquivo)
   {
     return 0;
   }
-}
-
-void ler_tabuleiro_aleatorio(RESTA_UM *jogo)
-{
-  srand(time(0));
-
-  jogo->tamanho_linhas = rand() % 26 + 1;
-  jogo->tamanho_colunas = rand() % 26 + 1;
-
-  alocar_matriz(&jogo->tabuleiro_jogo, jogo->tamanho_linhas, jogo->tamanho_colunas);
-
-  ler_valores_tabela(jogo, NULL);
 }
 
 void liberar_memoria_jogo(RESTA_UM *jogo)
@@ -450,9 +440,9 @@ int salvar_tabuleiro(RESTA_UM *jogo, char *nome_arquivo)
 
 int tabuleiro_valido(RESTA_UM *jogo)
 {
-  int i, j, pino_meio_valido, soma_movimentos, movimento_possiveis_atual;
+  int i, j, pino_meio_valido, tamanho_lista_movimentos, movimento_possiveis_atual;
 
-  soma_movimentos = 0;
+  tamanho_lista_movimentos = 0;
 
   for (i = 0; i < jogo->tamanho_linhas; i++)
   {
@@ -464,25 +454,25 @@ int tabuleiro_valido(RESTA_UM *jogo)
       {
         if ((i - 2 >= 0) && jogo->tabuleiro_jogo[i - 1][j] != -1 && jogo->tabuleiro_jogo[i - 2][j] != -1)
         {
-          soma_movimentos++;
+          tamanho_lista_movimentos++;
           movimento_possiveis_atual++;
         }
 
         if ((i + 2 < jogo->tamanho_linhas) && jogo->tabuleiro_jogo[i + 1][j] != -1 && jogo->tabuleiro_jogo[i + 2][j] != -1)
         {
-          soma_movimentos++;
+          tamanho_lista_movimentos++;
           movimento_possiveis_atual++;
         }
 
         if ((j - 2 >= 0) && jogo->tabuleiro_jogo[i][j - 1] != -1 && jogo->tabuleiro_jogo[i][j - 2] != -1)
         {
-          soma_movimentos++;
+          tamanho_lista_movimentos++;
           movimento_possiveis_atual++;
         }
 
         if ((j + 2 < jogo->tamanho_colunas) && jogo->tabuleiro_jogo[i][j + 1] != -1 && jogo->tabuleiro_jogo[i][j + 2] != -1)
         {
-          soma_movimentos++;
+          tamanho_lista_movimentos++;
           movimento_possiveis_atual++;
         }
 
@@ -505,10 +495,10 @@ int tabuleiro_valido(RESTA_UM *jogo)
     }
   }
 
-  jogo->lista_de_movimentos = malloc(soma_movimentos * sizeof(MOVIMENTO));
-  jogo->soma_movimentos = soma_movimentos;
+  jogo->lista_de_movimentos = malloc(tamanho_lista_movimentos * sizeof(MOVIMENTO));
+  jogo->tamanho_lista_movimentos = tamanho_lista_movimentos;
 
-  if (soma_movimentos == 0)
+  if (tamanho_lista_movimentos == 0)
   {
     return 0;
   }
@@ -519,18 +509,37 @@ int tabuleiro_valido(RESTA_UM *jogo)
 void imprimir_tabuleiro_jogo(RESTA_UM *jogo)
 {
   int i, j;
-  printf("\n");
-  printf(WHITE(BOLD("#  ")));
+
+  printf("\n\n\t");
+  for (j = 0; j < jogo->tamanho_colunas - 5; j++)
+  {
+    printf(WHITE("  "));
+  }
+  printf(WHITE("Resta%c %3d pino%c\n"), 109 * (jogo->num_pinos > 1), jogo->num_pinos, 115 * (jogo->num_pinos > 1));
+  printf(WHITE("\t" TAB_TL TAB_HOR TAB_HOR TAB_HOR TAB_HOR TAB_HOR TAB_HOR));
+
+  for (j = 0; j < jogo->tamanho_colunas; j++)
+  {
+    printf(WHITE(TAB_HOR TAB_HOR));
+  }
+  printf(WHITE(TAB_TR "\n\t" TAB_VER "    "));
+
   for (j = 0; j < jogo->tamanho_colunas; j++)
   {
     printf(WHITE(BOLD(" %c")), j + NUM_PRA_LETRA);
   }
-  printf(WHITE("   Resta%c %3d pino%c\n\n"), 109 * (jogo->num_pinos > 1), jogo->num_pinos, 115 * (jogo->num_pinos > 1));
+  printf(WHITE("  " TAB_VER "\n\t" TAB_VER "    "));
+
+  for (j = 0; j < jogo->tamanho_colunas; j++)
+  {
+    printf("  ");
+  }
+  printf("  " TAB_VER "\n");
 
   for (i = 0; i < jogo->tamanho_linhas; i++)
   {
 
-    printf(WHITE(BOLD("%c  ")), i + NUM_PRA_LETRA);
+    printf(WHITE(BOLD("\t" TAB_VER " %c  ")), i + NUM_PRA_LETRA);
     for (j = 0; j < jogo->tamanho_colunas; j++)
     {
       switch (jogo->tabuleiro_jogo[i][j])
@@ -552,8 +561,16 @@ void imprimir_tabuleiro_jogo(RESTA_UM *jogo)
       }
       }
     }
-    printf("\n");
+    printf(WHITE("  " TAB_VER "\n"));
   }
+
+  printf(WHITE("\t" TAB_BL TAB_HOR TAB_HOR TAB_HOR TAB_HOR TAB_HOR TAB_HOR));
+
+  for (j = 0; j < jogo->tamanho_colunas; j++)
+  {
+    printf(WHITE(TAB_HOR TAB_HOR));
+  }
+  printf(WHITE(TAB_BR "\n"));
 }
 
 MOVIMENTO cria_movimento(int posicao_x, int posicao_y, int direcao_x, int direcao_y)
@@ -576,13 +593,13 @@ void reinicia_lista_movimentos(RESTA_UM *jogo)
 {
   int i;
 
-  for (i = 0; i < jogo->soma_movimentos; i++)
+  for (i = 0; i < jogo->tamanho_lista_movimentos; i++)
   {
     jogo->lista_de_movimentos[i] = cria_movimento(0, 0, 0, 0);
   }
 }
 
-int verificar_movimentos_possiveis(RESTA_UM *jogo)
+int cria_lista_movimentos(RESTA_UM *jogo)
 {
   int i, j, total_movimentos_possiveis, contador_lista_movimentos;
   FILE *ponteiro_arquivo;
@@ -691,7 +708,7 @@ int gerenciar_movimento(RESTA_UM *jogo, char *comando_digitado)
 
   movimento_atual = cria_movimento(temp_x, temp_y, direcao_x, direcao_y);
 
-  for (i = 0; i < jogo->soma_movimentos; i++)
+  for (i = 0; i < jogo->tamanho_lista_movimentos; i++)
   {
     if (memcmp(&jogo->lista_de_movimentos[i], &movimento_atual, sizeof(MOVIMENTO)) == 0)
     {
@@ -780,10 +797,12 @@ void imprimir_msg_de_fim(char *tipo_de_fim)
 {
   if (strcmp(tipo_de_fim, "derrota") == 0)
   {
-    printf(RED("Ihhh amigoo, nesse jogo ai nao da pra ganhar! :c\n"));
+    printf(RED(BOLD("\tDERROTA!!\n")));
+    printf(RED("Não há mais como ganhar parceiro, desista... :c\n"));
   }
   else if (strcmp(tipo_de_fim, "vitoria") == 0)
   {
-    printf(GREEN("Voce ganhou!! Parabens amigao... :D\n"));
+    printf(GREEN(BOLD("\tVITORIA!!\n")));
+    printf(GREEN("Voce ganhou!! Parabens amigo :D\n"));
   }
 }
