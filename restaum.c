@@ -1,18 +1,20 @@
-/************************************************************/
-/*  Resta Um, jogo feito em C                               */
-/*  Augusto Ferreira Guilarducci                            */
-/*  20.1.4012 - Turma 41                                    */
-/************************************************************/
+/***********************************************************/
+/*  Resta Um, jogo feito em C                              */
+/*  Augusto Ferreira Guilarducci                           */
+/*  20.1.4012 - Turma 41                                   */
+/***********************************************************/
 
+/*==== Includes  ==========================================*/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
 
-#define TAM_MAX 200
-#define TAB_MAX 26
-#define NUM_PRA_LETRA 65
+/*==== Defines  ===========================================*/
+#define TAM_MAX 200 // Tamanho maximo de Texto
+#define NUM_PRA_LETRA 65 // Numero ASCII de A, para transformar numero em letra e vice-versa
 
+// Cores
 #define ANSI_RESET "\x1b[0m" // desativa os efeitos anteriores
 #define ANSI_BOLD "\x1b[1m"  // coloca o texto em negrito
 #define ANSI_COLOR_RED "\x1b[31m"
@@ -21,7 +23,7 @@
 #define ANSI_COLOR_CYAN "\x1b[36m"
 #define ANSI_COLOR_WHITE "\x1b[37m"
 
-// Macros para facilitar o uso
+// Macros para facilitar o uso das cores
 #define BOLD(string) ANSI_BOLD string ANSI_RESET
 #define BLUE(string) ANSI_COLOR_BLUE string ANSI_RESET
 #define RED(string) ANSI_COLOR_RED string ANSI_RESET
@@ -29,7 +31,7 @@
 #define CYAN(string) ANSI_COLOR_CYAN string ANSI_RESET
 #define WHITE(string) ANSI_COLOR_WHITE string ANSI_RESET
 
-// Caracteres uteis para tabelas
+// Caracteres para tabelas
 #define TAB_HOR "\u2501" // ━ (horizontal)
 #define TAB_VER "\u2503" // ┃ (vertical)
 #define TAB_TL "\u250F"  // ┏ (top-left)
