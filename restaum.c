@@ -11,7 +11,7 @@
 #include <time.h>
 
 /*==== Defines  ===========================================*/
-#define TAM_MAX 200 // Tamanho maximo de Texto
+#define TAM_MAX 200      // Tamanho maximo de Texto
 #define NUM_PRA_LETRA 65 // Numero ASCII de A, para transformar numero em letra e vice-versa
 
 // Cores
@@ -62,7 +62,6 @@ typedef struct
 {
   int num_pinos, foi_inicializado, tamanho_linhas, tamanho_colunas, eh_oh_fim, tamanho_lista_movimentos;
   int **tabuleiro_jogo;
-  COORDENADA pino_selecionado;
   MOVIMENTO *lista_de_movimentos, *lista_de_movimentos_ia;
 } RESTA_UM;
 
@@ -106,8 +105,9 @@ int main(int argc, char *argv[])
   /*==== Criação do Tabuleiro e Validação do jogo =========*/
   /*---- Declaração de Variaveis --------------------------*/
   RESTA_UM jogo;
+  int erro;
   char nome_arquivo[TAM_MAX], comando_digitado[TAM_MAX];
-
+  erro = 0;
   inicializar_var_jogo(&jogo); // Inicializa as variaveis do tabuleiro Resta Um
 
   /*---- Verifica se foi digitado um Argumento ------------*/
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
   /*-- Confirma que o jogo foi inicializado corretamente --*/
   if (!jogo.foi_inicializado)
   {
-    return 1;
+    return 0;
   }
 
   if (!tabuleiro_valido(&jogo)) // Verifica se o tabuleiro é valido
@@ -143,6 +143,7 @@ int main(int argc, char *argv[])
     imprimir_tabuleiro_jogo(&jogo);
     imprimir_msg_de_fim("derrota");
     jogo.eh_oh_fim = 1;
+    return 0;
   }
 
   else if (!cria_lista_movimentos(&jogo)) // Verifica se há movimentos possíveis
@@ -151,17 +152,28 @@ int main(int argc, char *argv[])
     imprimir_tabuleiro_jogo(&jogo);
     jogo.eh_oh_fim = 1;
     imprimir_msg_de_fim("derrota");
+    return 0;
   }
 
   /*-- Cria lista de movimentos da inteligência artifical -*/
   jogo.lista_de_movimentos_ia = malloc(jogo.num_pinos * sizeof(MOVIMENTO));
+
+  /*-- Imprime mensagem de boas vindas --------------------*/
+  printf(BLUE(BOLD("\n\tBem vindo ao meu Resta Um\n\t por Augusto Guilarducci\n")));
+  printf(RED(BOLD("\nAviso: ")));
+  printf(RED("um comando de ajuda muito grande pode\ndemorar alguns segundos para ser executado..."));
 
   /*==== Jogo =============================================*/
   /*---- Inicio do loop de jogo ---------------------------*/
   while (!jogo.eh_oh_fim) // sai caso seja o fim do jogo - variável do tipo RESTA_UM
   {
     /*-- A Cada Novo Turno --------------------------------*/
-    imprimir_tabuleiro_jogo(&jogo);
+    if (erro == 0)
+    {
+      imprimir_tabuleiro_jogo(&jogo);
+    }
+
+    erro = 0;
 
     if (jogo.num_pinos == 1) // Verifica se o jogador ganhou
     {
@@ -169,13 +181,13 @@ int main(int argc, char *argv[])
       jogo.eh_oh_fim = 1;
     }
 
-    /*---- Ve se o jogador ainda pode ganhar com 5  -----*/
+    /*---- Ve se o jogador ainda pode ganhar com 10  -----*/
     /*---- movimentos no futuro, usando backtracking ----*/
     else if (decidir_movimento_ia(&jogo, 10, 0, 0))
     {
 
       /*---- Pede um comando pro jogador e formata ------*/
-      printf("\nDigite seu comando: ");
+      printf(WHITE("\nDigite seu comando: "));
       fgets(comando_digitado, TAM_MAX - 1, stdin);
       comando_digitado[strlen(comando_digitado) - 1] = '\0'; // Retira o ENTER (\n)
 
@@ -192,12 +204,14 @@ int main(int argc, char *argv[])
         // Verifica se o jogador digitou um NOME para o arquivo
         if (comando_digitado[6] == '\0' || (comando_digitado[6] == ' ' && comando_digitado[7] == '\0'))
         {
+          erro = 1;
           printf(RED("Erro: Nao foi colocado o nome do arquivo!!\n"));
         }
 
         // Verifica se o jogador digitou a EXTENSÂO do arquivo
         else if (strcmp(&comando_digitado[strlen(comando_digitado) - 4], ".txt") != 0)
         {
+          erro = 1;
           printf(RED("Erro: Nao foi colocado a extensao do arquivo!!\n"));
         }
 
@@ -216,6 +230,7 @@ int main(int argc, char *argv[])
         // Verifica se o jogador digitou uma N para a ajuda
         if (comando_digitado[6] == '\0' || (comando_digitado[6] == ' ' && comando_digitado[7] == '\0'))
         {
+          erro = 1;
           printf(RED("Erro: Nao foi colocado o numero de ajudas!!\n"));
         }
 
@@ -262,11 +277,13 @@ int main(int argc, char *argv[])
             // Movimento inválido
             else
             {
+              erro = 1;
               printf(RED("Erro: Movimento invalido!!\n"));
             }
           }
           else
           { // Posição inexistente do tabuleiro
+            erro = 1;
             printf(RED("Erro: Posicao inexistente!!\n"));
           }
           break;
@@ -274,7 +291,8 @@ int main(int argc, char *argv[])
 
         // Jogador digitou um comando desconhecido
         default:
-        { //
+        {
+          erro = 1;
           printf(RED("Erro: Comando nao reconhecido!!\n"));
         }
         }
@@ -791,7 +809,7 @@ void imprimir_tabuleiro_jogo(RESTA_UM *jogo) // Imprime o tabuleiro e as pinos
   int i, j; // Declaração de Variaveis
 
   /*---- Imprime quantos pinos faltam -------------------*/
-  printf("\n\n\t");
+  printf("\n\n\n\t");
   for (j = 0; j < jogo->tamanho_colunas - 5; j++)
   {
     printf(WHITE("  "));
@@ -823,7 +841,7 @@ void imprimir_tabuleiro_jogo(RESTA_UM *jogo) // Imprime o tabuleiro e as pinos
   {
     printf("  ");
   }
-  printf(TAB_VER "\n");
+  printf(WHITE(TAB_VER "\n"));
 
   // Tabuleiro e Marcações de linha
   for (i = 0; i < jogo->tamanho_linhas; i++)
@@ -860,7 +878,7 @@ void imprimir_tabuleiro_jogo(RESTA_UM *jogo) // Imprime o tabuleiro e as pinos
   {
     printf("  ");
   }
-  printf(TAB_VER "\n");
+  printf(WHITE(TAB_VER "\n"));
 
   // Linha Inferior
   printf(WHITE("\t" TAB_BL TAB_HOR TAB_HOR TAB_HOR TAB_HOR TAB_HOR TAB_HOR));
@@ -873,18 +891,36 @@ void imprimir_tabuleiro_jogo(RESTA_UM *jogo) // Imprime o tabuleiro e as pinos
 }
 
 void imprimir_msg_de_fim(char *tipo_de_fim) // Imprime mensagem de fim, Vitoria ou Derrota
-{ 
+{
   // Derrota
   if (strcmp(tipo_de_fim, "derrota") == 0)
-  {
+  { 
     printf(RED(BOLD("\tDERROTA!!\n")));
-    printf(RED("Não há mais como ganhar parceiro, desista... :c\n"));
+    // Escolhe 1 de 3 frases de derrota
+    switch (rand() % 3)
+    {
+    case 0:
+    {
+      printf(RED("\tNão há mais como ganhar parceiro, desista... :c\n"));
+      break;
+    }
+    case 1:
+    {
+      printf(RED("\tÉ pois é, não da pra ganhar todas amigão...:c\n"));
+      break;
+    }
+    case 2:
+    {
+      printf(RED("\tAgora só resta tentar denovo né... :c\n"));
+      break;
+    }
+    }
   }
 
   // Vitoria
   else if (strcmp(tipo_de_fim, "vitoria") == 0)
   {
     printf(GREEN(BOLD("\tVITORIA!!\n")));
-    printf(GREEN("Voce ganhou!! Parabens amigo :D\n"));
+    printf(GREEN("\tVoce ganhou!! Parabens amigo :D\n"));
   }
 }
