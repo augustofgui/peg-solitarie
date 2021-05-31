@@ -77,6 +77,7 @@ void liberar_memoria_jogo(RESTA_UM *jogo);
 void ler_valores_tabela(RESTA_UM *jogo, FILE *ponteiro_arquivo);
 int ler_tabuleiro_arquivo(RESTA_UM *jogo, char *nome_arquivo);
 int salvar_tabuleiro(RESTA_UM *jogo, char *nome_arquivo);
+void criar_tabuleiro_aleatorio(RESTA_UM *jogo, int tipo_tabuleiro);
 
 /*==== Verificação de Derrota/Vitoria =====================*/
 int tabuleiro_valido(RESTA_UM *jogo);
@@ -122,13 +123,47 @@ int main(int argc, char *argv[])
   else
   {
     /*---- Cria um tabuleiro de maneira aleatoria ---------*/
+    int tipo_tabuleiro_aleatorio;
+
     srand(time(0));
-    jogo.tamanho_linhas = rand() % 26 + 1;
-    jogo.tamanho_colunas = rand() % 26 + 1;
+
+    tipo_tabuleiro_aleatorio = rand() % 5;
+
+    switch (tipo_tabuleiro_aleatorio)
+    {
+    case 0:
+    case 1:
+    {
+
+      jogo.tamanho_linhas = 7;
+      jogo.tamanho_colunas = 7;
+
+      break;
+    }
+
+    case 2:
+    case 3:
+    {
+
+      jogo.tamanho_linhas = 9;
+      jogo.tamanho_colunas = 9;
+
+      break;
+    }
+
+    case 4:
+    {
+
+      jogo.tamanho_linhas = 8;
+      jogo.tamanho_colunas = 8;
+
+      break;
+    }
+    }
 
     alocar_matriz(&jogo.tabuleiro_jogo, jogo.tamanho_linhas, jogo.tamanho_colunas);
 
-    ler_valores_tabela(&jogo, NULL); // Envia um nome de aquivo nulo
+    criar_tabuleiro_aleatorio(&jogo, tipo_tabuleiro_aleatorio);
   }
 
   /*-- Confirma que o jogo foi inicializado corretamente --*/
@@ -355,8 +390,6 @@ void ler_valores_tabela(RESTA_UM *jogo, FILE *ponteiro_arquivo) // Le os valores
 {
   int i, j; // Criação de variáveis
 
-  srand(time(0));
-
   for (i = 0; i < jogo->tamanho_linhas; i++)
   {
     for (j = 0; j < jogo->tamanho_colunas; j++)
@@ -368,15 +401,111 @@ void ler_valores_tabela(RESTA_UM *jogo, FILE *ponteiro_arquivo) // Le os valores
       }
 
       /*- Caso a função tenha recebido NULL, ou seja, utilizar valores aleatórios -*/
-      else
-      {
-        jogo->tabuleiro_jogo[i][j] = (rand() % 3) - 1; // Cria valor entre -1 e 1
-      }
 
       jogo->num_pinos += (jogo->tabuleiro_jogo[i][j] == 1); // Caso tenha lido um pino, adiciona +1 ao número total de pinos
     }
   }
   jogo->foi_inicializado = 1; // Confirma que o tabuleiro foi inicializado
+}
+
+void criar_tabuleiro_aleatorio(RESTA_UM *jogo, int tipo_tabuleiro)
+{
+  int i, j;
+
+  switch (tipo_tabuleiro)
+  {
+  case 0: // TABULEIRO PADRÃO
+  {
+
+    int tabuleiro_aleatorio[7][7] = {{-1, -1,  1,  1,  1, -1, -1, }, {-1, -1,  1,  1,  1, -1, -1, }, { 1,  1,  1,  1,  1,  1,  1, }, { 1,  1,  1,  0,  1,  1,  1, }, { 1,  1,  1,  1,  1,  1,  1, }, {-1, -1,  1,  1,  1, -1, -1, }, {-1, -1,  1,  1,  1, -1, -1, }};
+
+    for (i = 0; i < jogo->tamanho_linhas; i++)
+    {
+      for (j = 0; j < jogo->tamanho_colunas; j++)
+      {
+
+        jogo->tabuleiro_jogo[i][j] = tabuleiro_aleatorio[i][j];
+        jogo->num_pinos += (jogo->tabuleiro_jogo[i][j] == 1); // Caso tenha lido um pino, adiciona +1 ao número total de pinos
+      }
+    }
+    
+    break;
+  };
+
+  case 1: // TABULEIRO FRANCÊS/EUROPEU
+ {
+
+    int tabuleiro_aleatorio[7][7] = {{-1, -1,  1,  1,  1, -1, -1, }, {-1,  1,  1,  1,  1,  1, -1, }, { 1,  1,  1,  0,  1,  1,  1, }, { 1,  1,  1,  1,  1,  1,  1, }, { 1,  1,  1,  1,  1,  1,  1, }, {-1,  1,  1,  1,  1,  1, -1, }, {-1, -1,  1,  1,  1, -1, -1, }};
+
+    for (i = 0; i < jogo->tamanho_linhas; i++)
+    {
+      for (j = 0; j < jogo->tamanho_colunas; j++)
+      {
+
+        jogo->tabuleiro_jogo[i][j] = tabuleiro_aleatorio[i][j];
+        jogo->num_pinos += (jogo->tabuleiro_jogo[i][j] == 1); // Caso tenha lido um pino, adiciona +1 ao número total de pinos
+      }
+    }
+    
+    break;
+  };
+
+  case 2:
+ {
+
+    int tabuleiro_aleatorio[9][9] = {{-1, -1, -1,  1,  1,  1, -1, -1, -1 }, {-1, -1, -1,  1,  1,  1, -1, -1, -1 }, {-1, -1, -1,  1,  1,  1, -1, -1, -1 }, { 1,  1,  1,  1,  1,  1,  1,  1,  1 }, { 1,  1,  1,  1,  0,  1,  1,  1,  1 }, { 1,  1,  1,  1,  1,  1,  1,  1,  1 }, {-1, -1, -1,  1,  1,  1, -1, -1, -1 }, {-1, -1, -1,  1,  1,  1, -1, -1, -1 }, {-1, -1, -1,  1,  1,  1, -1, -1, -1 }};
+
+    for (i = 0; i < jogo->tamanho_linhas; i++)
+    {
+      for (j = 0; j < jogo->tamanho_colunas; j++)
+      {
+
+        jogo->tabuleiro_jogo[i][j] = tabuleiro_aleatorio[i][j];
+        jogo->num_pinos += (jogo->tabuleiro_jogo[i][j] == 1); // Caso tenha lido um pino, adiciona +1 ao número total de pinos
+      }
+    }
+    
+    break;
+  };
+
+  case 3:
+  {
+
+    int tabuleiro_aleatorio[9][9] = {{-1, -1, -1, -1,  1, -1, -1, -1, -1 }, {-1, -1, -1,  1,  1,  1, -1, -1, -1 }, {-1, -1,  1,  1,  1,  1,  1, -1, -1 }, { -1,  1,  1,  1,  1,  1,  1,  1,  -1 }, { 1,  1,  1,  1,  0,  1,  1,  1,  1 }, { -1,  1,  1,  1,  1,  1,  1,  1,  -1 }, {-1, -1,  1,  1,  1,  1,  1, -1, -1 }, {-1, -1, -1,  1,  1,  1, -1, -1, -1 }, {-1, -1, -1, -1,  1, -1, -1, -1, -1 }};
+
+    for (i = 0; i < jogo->tamanho_linhas; i++)
+    {
+      for (j = 0; j < jogo->tamanho_colunas; j++)
+      {
+
+        jogo->tabuleiro_jogo[i][j] = tabuleiro_aleatorio[i][j];
+        jogo->num_pinos += (jogo->tabuleiro_jogo[i][j] == 1); // Caso tenha lido um pino, adiciona +1 ao número total de pinos
+      }
+    }
+    
+    break;
+  };
+
+  case 4:
+  {
+
+    int tabuleiro_aleatorio[8][8] = {{-1, -1,  1,  1,  1, -1, -1, -1}, {-1, -1,  1,  1,  1, -1, -1, -1}, {-1, -1,  1,  1,  1, -1, -1, -1}, { 1,  1,  1,  1,  1,  1,  1,  1}, { 1,  1,  1,  0,  1,  1,  1,  1}, { 1,  1,  1,  1,  1,  1,  1,  1}, { -1,  -1,  1,  1,  1,  -1,  -1,  -1}, { -1,  -1,  1,  1,  1,  -1,  -1,  -1}};
+
+    for (i = 0; i < jogo->tamanho_linhas; i++)
+    {
+      for (j = 0; j < jogo->tamanho_colunas; j++)
+      {
+
+        jogo->tabuleiro_jogo[i][j] = tabuleiro_aleatorio[i][j];
+        jogo->num_pinos += (jogo->tabuleiro_jogo[i][j] == 1); // Caso tenha lido um pino, adiciona +1 ao número total de pinos
+      }
+    }
+    
+    break;
+  };
+  }
+
+  jogo->foi_inicializado = 1;
 }
 
 int ler_tabuleiro_arquivo(RESTA_UM *jogo, char *nome_arquivo) // Lida com o arquivo digitado como argumento
@@ -894,7 +1023,7 @@ void imprimir_msg_de_fim(char *tipo_de_fim) // Imprime mensagem de fim, Vitoria 
 {
   // Derrota
   if (strcmp(tipo_de_fim, "derrota") == 0)
-  { 
+  {
     printf(RED(BOLD("\tDERROTA!!\n")));
     // Escolhe 1 de 3 frases de derrota
     switch (rand() % 3)
